@@ -1,0 +1,185 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+struct Adresat {
+    int id;
+    string imie;
+    string nazwisko;
+    string telefon;
+    string email;
+    string adres;
+};
+
+// Zamienia linie tekstu na obiekt typu Adresat
+Adresat liniaNaAdresata(string linia) {
+    stringstream ss(linia);
+    string idStr;
+    Adresat a;
+
+    getline(ss, idStr, '|');
+    a.id = stoi(idStr);
+    getline(ss, a.imie, '|');
+    getline(ss, a.nazwisko, '|');
+    getline(ss, a.telefon, '|');
+    getline(ss, a.email, '|');
+    getline(ss, a.adres);
+
+    return a;
+}
+
+// Wczytuje adresatow z pliku do wektora
+vector<Adresat> wczytajAdresatowZPliku(string nazwaPliku) {
+    vector<Adresat> adresaci;
+    ifstream plik(nazwaPliku);
+    string linia;
+
+    while (getline(plik, linia)) {
+        if (!linia.empty()) {
+            adresaci.push_back(liniaNaAdresata(linia));
+        }
+    }
+    return adresaci;
+}
+
+// Zapisuje wszystkich adresatow z wektora do pliku
+void zapiszAdresatowDoPliku(vector<Adresat>& adresaci, string nazwaPliku) {
+    ofstream plik(nazwaPliku);
+    for (const auto& a : adresaci) {
+        plik << a.id << "|" << a.imie << "|" << a.nazwisko << "|"
+             << a.telefon << "|" << a.email << "|" << a.adres << endl;
+    }
+}
+
+// Dodaje nowego adresata
+void dodajAdresata(vector<Adresat>& adresaci) {
+    Adresat a;
+    cin.ignore();
+    cout << "Imie: "; getline(cin, a.imie);
+    cout << "Nazwisko: "; getline(cin, a.nazwisko);
+    cout << "Telefon: "; getline(cin, a.telefon);
+    cout << "Email: "; getline(cin, a.email);
+    cout << "Adres: "; getline(cin, a.adres);
+
+    a.id = adresaci.empty() ? 1 : adresaci.back().id + 1;
+    adresaci.push_back(a);
+    cout << "Adresat dodany." << endl;
+}
+
+// Wyswietla wszystkich adresatow
+void wyswietlAdresatow(const vector<Adresat>& adresaci) {
+    for (const auto& a : adresaci) {
+        cout << "ID: " << a.id << endl
+             << "Imie: " << a.imie << endl
+             << "Nazwisko: " << a.nazwisko << endl
+             << "Telefon: " << a.telefon << endl
+             << "Email: " << a.email << endl
+             << "Adres: " << a.adres << endl
+             << "-------------------" << endl;
+    }
+}
+
+// Wyszukuje adresatow po imieniu
+void szukajPoImieniu(const vector<Adresat>& adresaci) {
+    string imie;
+    cout << "Podaj imie: ";
+    cin >> imie;
+
+    for (const auto& a : adresaci) {
+        if (a.imie == imie) {
+            cout << "ID: " << a.id << endl
+                 << "Nazwisko: " << a.nazwisko << endl
+                 << "Telefon: " << a.telefon << endl
+                 << "Email: " << a.email << endl
+                 << "Adres: " << a.adres << endl
+                 << "-------------------" << endl;
+        }
+    }
+}
+
+// Wyszukuje adresatow po nazwisku
+void szukajPoNazwisku(const vector<Adresat>& adresaci) {
+    string nazwisko;
+    cout << "Podaj nazwisko: ";
+    cin >> nazwisko;
+
+    for (const auto& a : adresaci) {
+        if (a.nazwisko == nazwisko) {
+            cout << "ID: " << a.id << endl
+                 << "Imie: " << a.imie << endl
+                 << "Telefon: " << a.telefon << endl
+                 << "Email: " << a.email << endl
+                 << "Adres: " << a.adres << endl
+                 << "-------------------" << endl;
+        }
+    }
+}
+
+// Usuwa adresata po ID
+void usunAdresata(vector<Adresat>& adresaci, int id) {
+    for (auto it = adresaci.begin(); it != adresaci.end(); ++it) {
+        if (it->id == id) {
+            adresaci.erase(it);
+            cout << "Adresat usuniety." << endl;
+            return;
+        }
+    }
+    cout << "Nie znaleziono adresata." << endl;
+}
+
+// Edytuje adresata po ID
+void edytujAdresata(vector<Adresat>& adresaci, int id) {
+    for (auto& a : adresaci) {
+        if (a.id == id) {
+            cout << "Nowe imie: "; cin >> a.imie;
+            cout << "Nowe nazwisko: "; cin >> a.nazwisko;
+            cin.ignore();
+            cout << "Nowy telefon: "; getline(cin, a.telefon);
+            cout << "Nowy email: "; cin >> a.email;
+            cout << "Nowy adres: "; cin >> a.adres;
+            cout << "Dane zaktualizowane." << endl;
+            return;
+        }
+    }
+    cout << "Nie znaleziono adresata." << endl;
+}
+
+int main() {
+    vector<Adresat> adresaci = wczytajAdresatowZPliku("ksiazkaAdresowa.txt");
+    char wybor;
+
+    while (true) {
+        cout << endl
+             << "1. Dodaj adresata" << endl
+             << "2. Wyswietl wszystkich" << endl
+             << "3. Szukaj po imieniu" << endl
+             << "4. Szukaj po nazwisku" << endl
+             << "5. Usun" << endl
+             << "6. Edytuj" << endl
+             << "9. Zakoncz" << endl;
+        cin >> wybor;
+
+        switch (wybor) {
+            case '1': dodajAdresata(adresaci); zapiszAdresatowDoPliku(adresaci, "ksiazkaAdresowa.txt"); break;
+            case '2': wyswietlAdresatow(adresaci); break;
+            case '3': szukajPoImieniu(adresaci); break;
+            case '4': szukajPoNazwisku(adresaci); break;
+            case '5': {
+                int id; cout << "ID do usuniecia: "; cin >> id;
+                usunAdresata(adresaci, id);
+                zapiszAdresatowDoPliku(adresaci, "ksiazkaAdresowa.txt");
+            } break;
+            case '6': {
+                int id; cout << "ID do edycji: "; cin >> id;
+                edytujAdresata(adresaci, id);
+                zapiszAdresatowDoPliku(adresaci, "ksiazkaAdresowa.txt");
+            } break;
+            case '9': return 0;
+            default: cout << "Nieprawidlowy wybor." << endl;
+        }
+    }
+}
